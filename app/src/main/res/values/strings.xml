@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Simple JSON</string>
+    <string name="contentDescription">I am contentDescription</string>
+</resources>
