@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <androidx.coordinatorlayout.widget.CoordinatorLayout
+    android:id="@+id/CoordinatorLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -13,98 +14,110 @@
         android:layout_height="match_parent"
         android:orientation="vertical" >
 
-    <ListView
-        android:id="@+id/listview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:longClickable="true" >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:clickable="true"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/space"
+                android:textSize="20sp"/>
 
-            android:contentDescription="@string/contentDescription"
-            app:fabSize="mini"
-            app:srcCompat="@drawable/back" />
-    </ListView>
+            <TextView
+                android:id="@+id/filePath"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="@string/filePath"
+                android:textSize="20sp"/>
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/json"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:text="@string/nowIn"
+                android:textSize="20sp"
+                android:textColor="#ff0000"/>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:layout_gravity="bottom|end"
-        android:orientation="vertical"
-        android:layout_margin="15dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/space"
+                android:textSize="20sp"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            app:fabSize="mini"
+        </LinearLayout>
 
-            android:clickable="true"
-            app:srcCompat="@drawable/text"
-            android:contentDescription="@string/contentDescription" />
+        <View
+            android:id="@+id/View"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#ffffff" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_square_brackets"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            app:fabSize="mini"
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
 
-            android:clickable="true"
-            app:srcCompat="@drawable/square_brackets"
-            android:contentDescription="@string/contentDescription" />
+            <ListView
+                android:id="@+id/ListView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:longClickable="true" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_curly_brackets"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            app:fabSize="mini"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_margin="10dp"
 
-            android:clickable="true"
-            android:src="@drawable/curly_brackets"
-            android:contentDescription="@string/contentDescription" />
+                android:orientation="vertical"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                tools:ignore="RelativeOverlap">
 
-    </LinearLayout>
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:layout_gravity="start|bottom"
-        android:orientation="vertical"
-        android:layout_margin="15dp" >
+                    app:srcCompat="@drawable/back"
+                    android:contentDescription="@string/contentDescription" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_open"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            app:fabSize="mini"
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabCurly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    app:fabSize="mini"
 
-            android:clickable="true"
-            app:srcCompat="@drawable/open"
-            android:contentDescription="@string/contentDescription" />
+                    android:src="@drawable/curly_brackets"
+                    android:contentDescription="@string/contentDescription" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_information"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            app:fabSize="mini"
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabSquare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    app:fabSize="mini"
 
-            android:clickable="true"
-            app:srcCompat="@drawable/information"
-            android:contentDescription="@string/contentDescription" />
+                    app:srcCompat="@drawable/square_brackets"
+                    android:contentDescription="@string/contentDescription" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    app:fabSize="mini"
+
+                    app:srcCompat="@drawable/text"
+                    android:contentDescription="@string/contentDescription" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
 
     </LinearLayout>
 
