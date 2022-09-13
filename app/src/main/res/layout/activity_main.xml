@@ -19,33 +19,27 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/space"
-                android:textSize="20sp"/>
-
-            <TextView
-                android:id="@+id/filePath"
+                android:id="@+id/path"
+                android:fontFamily="@font/consolas"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="3"
-                android:text="@string/filePath"
+                android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+                android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+                android:text="@string/path"
                 android:textSize="20sp"/>
 
             <TextView
                 android:id="@+id/json"
+                android:fontFamily="@font/consolas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="end"
-                android:text="@string/nowIn"
+                android:text="@string/empty"
+                android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+                android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
                 android:textSize="20sp"
                 android:textColor="#ff0000"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/space"
-                android:textSize="20sp"/>
 
         </LinearLayout>
 

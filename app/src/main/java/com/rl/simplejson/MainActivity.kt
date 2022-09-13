@@ -1,139 +1,394 @@
 package com.rl.simplejson
 
+import android.app.Activity
 import android.content.Intent
-import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.util.Log
 import android.view.KeyEvent
 import android.widget.ArrayAdapter
-import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import android.widget.EditText
+import android.widget.LinearLayout
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import com.rl.simplejson.databinding.ActivityMainBinding
+import org.json.JSONArray
 import org.json.JSONObject
-import java.util.*
-import kotlin.collections.HashMap
+import java.io.File
+
+private const val prefixPath = "/storage/emulated/0"
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private var list = mutableListOf<Any>("Press Volume Down Button","to","Ch00se a File")
 
-    private var example = "{\"name\":\"Ray\",\"age\":18}".trim()
-    private var copy = example
+    private var adapterList = mutableListOf<String>()
+    private var filePath = ""
 
-    private lateinit var format: String
+    private var masterString = ""
+    private var masterCDT = ""
+    
+    private var history = mutableListOf<String>()
+
+    private var nowString = ""
+    private var nowFingerPrint = ' '
+    private var nowCDT = ""
+    private var nowObject = mutableMapOf<String,String>()
+    private var nowArray = mutableListOf<String>()
+    private var nowDict = mutableListOf<String>()
+
+    private var openResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if(it.resultCode == RESULT_OK) {
+            filePath = it.data?.data?.path!!.split(':')[1]
+            binding.path.text = filePath
+
+            // 準備masterString & history
+            run {
+                masterString = File(prefixPath,filePath).readText()
+                for (i in masterString) {
+                    if (i !in " \t\r\n") nowString += i
+                }
+                masterString = nowString
+                history.add(masterString)
+            }
+
+            // 設定監聽事件
+            run {
+                binding.ListView.setOnItemClickListener { _, _, i, _ ->
+                    nowString = if(nowCDT=="Object") nowObject[nowDict[i]]!! else nowArray[i]
+                    nowFingerPrint = nowString[0]
+                    if (nowFingerPrint in "{[") {
+                        history.add(nowString)
+                        plJson(nowString)
+                    }
+                }
+                binding.fabBack.setOnClickListener {
+                    onBackPressed()
+                }
+                binding.fabBack.setOnLongClickListener {
+                    nowFingerPrint = masterString[0]
+                    history = mutableListOf(masterString)
+                    plJson(masterString)
+                    return@setOnLongClickListener true
+                }
+            }
+
+            nowFingerPrint = masterString[0]
+            history.add(masterString)
+            plJson(masterString)
+            masterCDT = nowCDT
+        }
+    }
+    private var newResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if(it.resultCode == Activity.RESULT_OK) {
+            filePath = it.data?.data?.path!!.split(':')[1] + '/'
+            binding.path.text = filePath
+            binding.json.text = getString(R.string.folder)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // 請求權限
         if(!Environment.isExternalStorageManager()) {
             val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-            startActivityForResult(intent, 1024)
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()){}.launch(intent)
         }
 
-        /* -------------------------------------------------- */
-
-        bindingSetting()
-        algorithm()
+        // 準備view & adapterList
+        run {
+            adapterList.add("Key Up : New")
+            adapterList.add("Long Key Up : New File Under Current Path")
+            adapterList.add("Key Down : Open")
+            binding.path.text = getString(R.string.path)
+            binding.json.text = getString(R.string.empty)
+        }
+        adapterUpdate()
     }
 
+    // Parse & Layout Json
+    private fun plJson(jsonStringOrigin: String) {
 
-    private fun algorithm() {
-        if(copy[0]=='{') {
-            copy = copy.substring(1,copy.length-1)
+        val jsonString = jsonStringOrigin.substring(1,jsonStringOrigin.length-1)
+        val splitList = mutableListOf<String>()
+        val commaList = mutableListOf<Int>()
 
-            var mapTemp = mutableListOf<String>()
-            var json = mutableMapOf<String, Any>("name" to "{2}", "age" to 18)
-            
-            var temp = ""
+        // 準備splitList
+        run {
+            var tempString = ""
+            for (i in jsonString) {
 
-            {
-                for (i in copy) {
-                    if (i == ':') {
-                        mapTemp.add(temp)
-                        temp = ""
-                    } else if (i == ',') {
-                        json.put(mapTemp[0], mapTemp[1])
-                        mapTemp.clear()
-                    } else {
-                        temp += i
+                if (i in "{[") commaList.add(0)
+
+                else if (i in "]}") {
+                    for (j in commaList.size-1 downTo 0) {
+                        if (commaList[j] == 0) {
+                            commaList[j] = 1
+                            break
+                        }
                     }
                 }
-            }
+                else if (i == ',') {
 
-            list.clear()
-            for(j in json) {
-                list.add("${j.key}:${j.value}")
+                    // 這個逗號是否為最外層的(分水嶺)
+                    var isWatershed = true
+                    for (j in commaList) {
+                        if (j == 0) {
+                            isWatershed = false
+                            break
+                        }
+                    }
+                    if (isWatershed) {
+                        splitList.add(tempString)
+                        tempString = ""
+                        continue
+                    }
+                }
+                tempString += i
+            }
+            splitList.add(tempString)
+        }
+
+        // 準備nowObject & nowArray & nowCDT
+        run {
+            when (nowFingerPrint) {
+                '{' -> {
+                    nowCDT = "Object"
+                    val map = mutableMapOf<String, String>()
+
+                    for (i in splitList) {
+                        val colonList = mutableListOf<String>()
+
+                        // 找出最外層冒號
+                        for (j in i.indices) {
+                            if (i[j] == ':') {
+                                colonList.add(i.substring(0, j))
+                                colonList.add(i.substring(j + 1))
+                                break
+                            }
+                        }
+                        map[colonList[0]] = colonList[1]
+                    }
+                    nowObject = map
+                }
+                '[' -> {
+                    nowCDT = "Array"
+                    nowArray = splitList
+                }
+            }
+            binding.json.text = nowCDT
+        }
+
+        // 準備adapterList
+        run {
+            if (nowCDT == "Object") {
+                adapterList.clear()
+                nowDict.clear()
+
+                for (i in nowObject) {
+                    nowDict.add(i.key)
+
+                    var temp = "${i.key} : "
+                    temp += if (i.value[0] in "{[") "${i.value[0]} ${lenJson(i.value)} ${i.value[i.value.length - 1]}" else i.value
+                    adapterList.add(temp)
+                }
+            } else {
+                adapterList.clear()
+
+                for (i in nowArray) {
+                    adapterList.add(if (i[0] in "{[") "${i[0]} ${lenJson(i)} ${i[i.length - 1]}" else i)
+                }
             }
             adapterUpdate()
         }
-        else {
-            var json = mutableListOf<Any>()
-        }
     }
 
-    private fun bindingSetting() {
-        binding.json.typeface = Typeface.createFromAsset(assets,"fonts/Consolas.ttf")
-        binding.filePath.typeface = Typeface.createFromAsset(assets,"fonts/Consolas.ttf")
+    private fun lenJson(jsonString_: String): Int {
 
-        adapterUpdate()
+        val splitList = mutableListOf<String>()
+        val commaList = mutableListOf<Int>()
 
-        binding.filePath.text = null
+        var tempJsonString: String
+        var jsonString = jsonString_
 
-        binding.fabBack.setOnClickListener {
-
+        // 移除最外層括號
+        run {
+            for (i in jsonString.indices) {
+                if (jsonString[i] in "{[") {
+                    jsonString = jsonString.substring(i + 1)
+                    break
+                }
+            }
+            for (i in jsonString.length - 1 downTo 0) {
+                if (jsonString[i] in "]}") {
+                    jsonString = jsonString.substring(0, i)
+                    break
+                }
+            }
         }
-        binding.fabBack.setOnLongClickListener {
-            return@setOnLongClickListener true
+
+        // 準備splitList
+        run {
+            tempJsonString = ""
+            for (i in jsonString) {
+
+                if (i in "{[") commaList.add(0)
+
+                else if (i in "]}") {
+                    for (j in commaList.size-1 downTo 0) {
+                        if (commaList[j] == 0) {
+                            commaList[j] = 1
+                            break
+                        }
+                    }
+                }
+                else if (i == ',') {
+
+                    // 這個逗號是否為最外層的(分水嶺)
+                    var isWatershed = true
+                    for (j in commaList) {
+                        if (j == 0) {
+                            isWatershed = false
+                            break
+                        }
+                    }
+                    if (isWatershed) {
+                        splitList.add(tempJsonString)
+                        tempJsonString = ""
+                        continue
+                    }
+                }
+                tempJsonString += i
+            }
+            splitList.add(tempJsonString)
         }
 
-        binding.fabCurly.setOnClickListener {
-
-        }
-        binding.fabText.setOnClickListener {
-
-        }
-        binding.fabSquare.setOnClickListener {
-
-        }
-
+        return splitList.size
     }
 
     private fun adapterUpdate() {
-        binding.ListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
+        binding.ListView.adapter = ArrayAdapter(this, R.layout.listview_adapter, adapterList)
     }
 
     override fun onBackPressed() {
-        Snackbar.make(binding.CoordinatorLayout, "onBackPressed", Snackbar.ANIMATION_MODE_SLIDE).show()
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            val intent = Intent()
-                .setType("application/json")
-                .setAction(Intent.ACTION_GET_CONTENT)
-
-            startActivityForResult(Intent.createChooser(intent, "Select a file"), 256)
-            true
-        } else {
-            super.onKeyDown(keyCode, event)
+        if (history.size > 1) {
+            history.removeLast()
+            nowString = history[history.size-1]
+            nowFingerPrint = nowString[0]
+            plJson(nowString)
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        return when(keyCode) {
+            // New
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                event!!.startTracking()
+                true
+            }
+            // Open
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                val intent = Intent().setType("application/json").setAction(Intent.ACTION_GET_CONTENT)
+                openResultLauncher.launch(Intent.createChooser(intent,"Choose A File"))
+                true
+            }
+            else -> super.onKeyDown(keyCode, event)
+        }
+    }
 
-        if (requestCode == 256 && resultCode == RESULT_OK) {
-            val selectedFile = data?.data?.path?.substring(18)
-            Snackbar.make(binding.CoordinatorLayout, "$selectedFile", Snackbar.ANIMATION_MODE_SLIDE).show()
+    override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
+        if(keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            nameNewFile()
+            return true
+        }
+        return super.onKeyLongPress(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (event!!.flags and KeyEvent.FLAG_CANCELED_LONG_PRESS == 0) {
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                newResultLauncher.launch(intent)
+                return true
+            }
+        }
+        return super.onKeyUp(keyCode, event)
+    }
+
+    private fun nameNewFile() {
+        val fileNameLayout = LinearLayout(this)
+        fileNameLayout.orientation = LinearLayout.VERTICAL
+
+        val newFileNameInput = EditText(this)
+        fileNameLayout.addView(newFileNameInput)
+
+        val dialog = AlertDialog.Builder(this)
+            .setCancelable(false)
+            .setTitle("Name Your File")
+            .setView(fileNameLayout)
+            .setPositiveButton("Done", null)
+            .setNegativeButton("Cancel", null)
+            .show()
+
+        val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        button.setOnClickListener {
+
+            val newFileName = newFileNameInput.text.toString()
+
+            val fileCreationCondition = AlertDialog
+                .Builder(this)
+                .setCancelable(false)
+                .setPositiveButton("OK", null)
+
+            if(newFileName == "") {
+                fileCreationCondition
+                    .setTitle("Fail")
+                    .setMessage("File Name Can't Be Empty")
+                    .show()
+            }
+            else if(newFileName[0] == ' ') {
+                fileCreationCondition
+                    .setTitle("Fail")
+                    .setMessage("The First Letter Of File Name Can't Be Space")
+                    .show()
+            }
+            else {
+                fileCreationCondition
+                    .setTitle("Success")
+                    .setMessage("File Create Successfully At $filePath")
+                    .show()
+
+                filePath += "${newFileName}.json"
+                binding.path.text = filePath
+
+                newFileNameInput.text = null
+                fileNameLayout.removeView(newFileNameInput)
+                dialog.dismiss()
+
+                // 不是Object或Array
+                run {
+                    AlertDialog
+                        .Builder(this)
+                        .setCancelable(false)
+                        .setTitle("JSON Object or JSON Array ?")
+                        .setPositiveButton("Object") { _, _ -> masterCDT = "Object" }
+                        .setNeutralButton("Array") { _, _ -> masterCDT = "Array" }
+                        .show()
+
+                    nowCDT = masterCDT
+
+                    File(prefixPath, filePath).writeText(
+                        if (masterCDT == "Object") JSONObject("{}").toString(4)
+                        else JSONArray("[]").toString(4)
+                    )
+                }
+            }
         }
     }
 }

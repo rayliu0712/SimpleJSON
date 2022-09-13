@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name">Simple JSON</string>
     <string name="contentDescription">I am contentDescription</string>
-    <string name="filePath">No File Chosen</string>
-    <string name="nowIn">EMPTY</string>
-    <string name="space">&#160;&#160;&#160;</string>
 
-    <string name="obj">Object</string>
-    <string name="arr">Array</string>
+    <string name="path">No File Chosen</string>
+
+    <string name="folder">Folder</string>
+    <string name="empty">Empty</string>
+    <string name="object">Object</string>
+    <string name="array">Array</string>
+
+    <string name="space">&#160;&#160;&#160;</string>
 </resources>
