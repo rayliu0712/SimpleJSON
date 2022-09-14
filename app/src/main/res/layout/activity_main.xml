@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <androidx.coordinatorlayout.widget.CoordinatorLayout
-    android:id="@+id/CoordinatorLayout"
+    android:id="@+id/coordinatorLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -24,27 +24,25 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="3"
-                android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-                android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+                android:layout_marginStart="15dp"
                 android:text="@string/path"
-                android:textSize="20sp"/>
+                android:textSize="20sp"
+                tools:ignore="RtlSymmetry" />
 
             <TextView
-                android:id="@+id/json"
+                android:id="@+id/CDT"
                 android:fontFamily="@font/consolas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="end"
+                android:layout_marginEnd="15dp"
                 android:text="@string/empty"
-                android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-                android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
                 android:textSize="20sp"
-                android:textColor="#ff0000"/>
+                android:textColor="#ff0000"
+                tools:ignore="RtlSymmetry" />
 
         </LinearLayout>
 
         <View
-            android:id="@+id/View"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#ffffff" />
@@ -54,7 +52,7 @@
             android:layout_height="wrap_content" >
 
             <ListView
-                android:id="@+id/ListView"
+                android:id="@+id/listView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:longClickable="true" />

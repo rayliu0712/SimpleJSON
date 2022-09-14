@@ -6,8 +6,4 @@
 
     <string name="folder">Folder</string>
     <string name="empty">Empty</string>
-    <string name="object">Object</string>
-    <string name="array">Array</string>
-
-    <string name="space">&#160;&#160;&#160;</string>
 </resources>

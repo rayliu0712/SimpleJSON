@@ -1,8 +1,6 @@
 package com.rl.simplejson
 
-import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
@@ -12,6 +10,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.rl.simplejson.databinding.ActivityMainBinding
 import org.json.JSONArray
 import org.json.JSONObject
@@ -24,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private var adapterList = mutableListOf<String>()
+    private lateinit var adapter: ArrayAdapter<String>
     private var filePath = ""
 
     private var masterString = ""
@@ -43,19 +43,18 @@ class MainActivity : AppCompatActivity() {
             filePath = it.data?.data?.path!!.split(':')[1]
             binding.path.text = filePath
 
-            // 準備masterString & history
+            // 準備masterString
             run {
                 masterString = File(prefixPath,filePath).readText()
                 for (i in masterString) {
                     if (i !in " \t\r\n") nowString += i
                 }
                 masterString = nowString
-                history.add(masterString)
             }
 
             // 設定監聽事件
             run {
-                binding.ListView.setOnItemClickListener { _, _, i, _ ->
+                binding.listView.setOnItemClickListener { _, _, i, _ ->
                     nowString = if(nowCDT=="Object") nowObject[nowDict[i]]!! else nowArray[i]
                     nowFingerPrint = nowString[0]
                     if (nowFingerPrint in "{[") {
@@ -68,23 +67,21 @@ class MainActivity : AppCompatActivity() {
                 }
                 binding.fabBack.setOnLongClickListener {
                     nowFingerPrint = masterString[0]
-                    history = mutableListOf(masterString)
                     plJson(masterString)
                     return@setOnLongClickListener true
                 }
             }
-
             nowFingerPrint = masterString[0]
-            history.add(masterString)
             plJson(masterString)
             masterCDT = nowCDT
         }
     }
+
     private var newResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if(it.resultCode == Activity.RESULT_OK) {
+        if(it.resultCode == RESULT_OK) {
             filePath = it.data?.data?.path!!.split(':')[1] + '/'
             binding.path.text = filePath
-            binding.json.text = getString(R.string.folder)
+            binding.CDT.text = getString(R.string.folder)
         }
     }
 
@@ -106,10 +103,14 @@ class MainActivity : AppCompatActivity() {
             adapterList.add("Key Up : New")
             adapterList.add("Long Key Up : New File Under Current Path")
             adapterList.add("Key Down : Open")
+
+            adapter = ArrayAdapter(this, R.layout.list, adapterList)
+            binding.listView.adapter = adapter
+            adapter.notifyDataSetChanged()
+
             binding.path.text = getString(R.string.path)
-            binding.json.text = getString(R.string.empty)
+            binding.CDT.text = getString(R.string.empty)
         }
-        adapterUpdate()
     }
 
     // Parse & Layout Json
@@ -182,7 +183,7 @@ class MainActivity : AppCompatActivity() {
                     nowArray = splitList
                 }
             }
-            binding.json.text = nowCDT
+            binding.CDT.text = nowCDT
         }
 
         // 準備adapterList
@@ -205,7 +206,7 @@ class MainActivity : AppCompatActivity() {
                     adapterList.add(if (i[0] in "{[") "${i[0]} ${lenJson(i)} ${i[i.length - 1]}" else i)
                 }
             }
-            adapterUpdate()
+            adapter.notifyDataSetChanged()
         }
     }
 
@@ -272,14 +273,14 @@ class MainActivity : AppCompatActivity() {
         return splitList.size
     }
 
-    private fun adapterUpdate() {
-        binding.ListView.adapter = ArrayAdapter(this, R.layout.listview_adapter, adapterList)
-    }
-
     override fun onBackPressed() {
-        if (history.size > 1) {
-            history.removeLast()
-            nowString = history[history.size-1]
+        if (filePath != "") {
+            nowString = try {
+                history.removeLast()
+                history[history.size-1]
+            }
+            catch (e: Exception) { masterString }
+
             nowFingerPrint = nowString[0]
             plJson(nowString)
         }
@@ -371,12 +372,12 @@ class MainActivity : AppCompatActivity() {
                 fileNameLayout.removeView(newFileNameInput)
                 dialog.dismiss()
 
-                // 不是Object或Array
+                // New JSON Object or JSON Array ?
                 run {
                     AlertDialog
                         .Builder(this)
                         .setCancelable(false)
-                        .setTitle("JSON Object or JSON Array ?")
+                        .setTitle("New JSON Object or JSON Array ?")
                         .setPositiveButton("Object") { _, _ -> masterCDT = "Object" }
                         .setNeutralButton("Array") { _, _ -> masterCDT = "Array" }
                         .show()
