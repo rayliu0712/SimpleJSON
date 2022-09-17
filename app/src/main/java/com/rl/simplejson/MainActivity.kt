@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import android.util.Log
 import android.view.KeyEvent
 import android.widget.ArrayAdapter
 import android.widget.EditText
@@ -26,57 +27,65 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: ArrayAdapter<String>
     private var filePath = ""
 
-    private var masterString = ""
     private var masterCDT = ""
-    
-    private var history = mutableListOf<String>()
+    private var masterString = ""
 
-    private var nowString = ""
-    private var nowFingerPrint = ' '
+    private var history = mutableListOf<Array<Int>>()
+
+    private var nowIndex = arrayOf<Int>()
     private var nowCDT = ""
-    private var nowObject = mutableMapOf<String,String>()
-    private var nowArray = mutableListOf<String>()
-    private var nowDict = mutableListOf<String>()
+    private var nowObject = mutableListOf<Array<Int>>()
+    private var nowArray  = mutableListOf<Array<Int>>()
+    private var nowList   = mutableListOf<Array<Int>>()
 
     private var openResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if(it.resultCode == RESULT_OK) {
             filePath = it.data?.data?.path!!.split(':')[1]
             binding.path.text = filePath
 
-            // 準備masterString
+            // masterString
             run {
                 masterString = File(prefixPath,filePath).readText()
+                var tempString = ""
+                var quotation = 0
                 for (i in masterString) {
-                    if (i !in " \t\r\n") nowString += i
+                    if (i == '"')
+                        quotation++
+                    if ((i == ' ' && quotation%2==1) || i !in " \n\t\r")
+                        tempString += i
                 }
-                masterString = nowString
+                masterString = tempString
             }
 
-            // 設定監聽事件
+            plJson(0,masterString.length-1)
+            masterCDT = nowCDT
+
+            // view setting
             run {
                 binding.listView.setOnItemClickListener { _, _, i, _ ->
-                    nowString = if(nowCDT=="Object") nowObject[nowDict[i]]!! else nowArray[i]
-                    nowFingerPrint = nowString[0]
-                    if (nowFingerPrint in "{[") {
-                        history.add(nowString)
-                        plJson(nowString)
+                    nowIndex = nowList[i]
+                    if (masterString[nowIndex[nowIndex.lastIndex]] in "]}") {
+                        if (nowCDT=="Object") {
+                            history.add(arrayOf(nowList[0][0]-1, nowList[nowList.lastIndex][2]+1))
+                            plJson(nowIndex[1]+1,nowIndex[2])
+                        }
+                        else {
+                            history.add(arrayOf(nowList[0][0]-1, nowList[nowList.lastIndex][1]+1))
+                            plJson(nowIndex[0],nowIndex[1])
+                        }
                     }
                 }
                 binding.fabBack.setOnClickListener {
                     onBackPressed()
                 }
                 binding.fabBack.setOnLongClickListener {
-                    nowFingerPrint = masterString[0]
-                    plJson(masterString)
+                    history.clear()
+                    plJson(0,masterString.length-1)
                     return@setOnLongClickListener true
                 }
             }
-            nowFingerPrint = masterString[0]
-            plJson(masterString)
-            masterCDT = nowCDT
         }
     }
-
     private var newResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if(it.resultCode == RESULT_OK) {
             filePath = it.data?.data?.path!!.split(':')[1] + '/'
@@ -113,30 +122,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Parse & Layout Json
-    private fun plJson(jsonStringOrigin: String) {
-
-        val jsonString = jsonStringOrigin.substring(1,jsonStringOrigin.length-1)
-        val splitList = mutableListOf<String>()
+    private fun plJson(startIndex_: Int, endIndex: Int) {
+        var startIndex = startIndex_
+        var tempString = masterString.substring(startIndex, endIndex+1)
+        val fingerPrint = tempString[tempString.lastIndex]
         val commaList = mutableListOf<Int>()
 
-        // 準備splitList
+        if (fingerPrint in "]}") {
+            tempString = tempString.substring(1,tempString.lastIndex)
+            startIndex++
+        }
+
+        // nowList
         run {
-            var tempString = ""
-            for (i in jsonString) {
+            nowList.clear()
+            val tempList = mutableListOf<Int>()
 
-                if (i in "{[") commaList.add(0)
-
-                else if (i in "]}") {
-                    for (j in commaList.size-1 downTo 0) {
+            for (i in tempString.indices) {
+                if (tempString[i] in "{[")
+                    commaList.add(0)
+                else if (tempString[i] in "]}") {
+                    for (j in commaList.lastIndex downTo 0) {
                         if (commaList[j] == 0) {
                             commaList[j] = 1
                             break
                         }
                     }
                 }
-                else if (i == ',') {
-
+                else if (tempString[i] == ',') {
                     // 這個逗號是否為最外層的(分水嶺)
                     var isWatershed = true
                     for (j in commaList) {
@@ -146,102 +159,84 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     if (isWatershed) {
-                        splitList.add(tempString)
-                        tempString = ""
+                        nowList.add(arrayOf(tempList[0],tempList[tempList.lastIndex]))
+                        tempList.clear()
                         continue
                     }
                 }
-                tempString += i
+                tempList.add(startIndex + i)
             }
-            splitList.add(tempString)
+            nowList.add(arrayOf(tempList[0],tempList[tempList.lastIndex]))
+
+            Log.i("main",nowList.size.toString())
+            for (i in nowList) {
+                Log.i("main","${i[0]} / ${i[1]}")
+            }
         }
 
-        // 準備nowObject & nowArray & nowCDT
+        // nowCDT & nowObject & nowArray & adapterList
         run {
-            when (nowFingerPrint) {
-                '{' -> {
-                    nowCDT = "Object"
-                    val map = mutableMapOf<String, String>()
+            adapterList.clear()
 
-                    for (i in splitList) {
-                        val colonList = mutableListOf<String>()
+            if (fingerPrint == '}'){
 
-                        // 找出最外層冒號
-                        for (j in i.indices) {
-                            if (i[j] == ':') {
-                                colonList.add(i.substring(0, j))
-                                colonList.add(i.substring(j + 1))
-                                break
-                            }
+                nowCDT = "Object"
+                val tempObject = mutableListOf<Array<Int>>()
+                for (i in nowList) {
+                    for (j in i[0]..i[1]) {
+                        if (masterString[j] == ':') {
+                            tempObject.add(arrayOf(i[0], j, i[1]))
+                            break
                         }
-                        map[colonList[0]] = colonList[1]
                     }
-                    nowObject = map
                 }
-                '[' -> {
-                    nowCDT = "Array"
-                    nowArray = splitList
-                }
-            }
-            binding.CDT.text = nowCDT
-        }
-
-        // 準備adapterList
-        run {
-            if (nowCDT == "Object") {
-                adapterList.clear()
-                nowDict.clear()
+                nowObject = tempObject
+                nowList = nowObject
 
                 for (i in nowObject) {
-                    nowDict.add(i.key)
-
-                    var temp = "${i.key} : "
-                    temp += if (i.value[0] in "{[") "${i.value[0]} ${lenJson(i.value)} ${i.value[i.value.length - 1]}" else i.value
-                    adapterList.add(temp)
+                    adapterList.add("${masterString.substring(i[0],i[1])} : ${
+                        if (masterString[i[1]+1] in "{[") "${masterString[i[1]+1]} ${lenJson(i[1]+1,i[2])} ${masterString[i[2]]}"
+                        else masterString.substring(i[1]+1,i[2]+1)
+                    }")
                 }
-            } else {
-                adapterList.clear()
+            }
+            else {
+                nowCDT = "Array"
+                nowArray = nowList
 
                 for (i in nowArray) {
-                    adapterList.add(if (i[0] in "{[") "${i[0]} ${lenJson(i)} ${i[i.length - 1]}" else i)
+                    adapterList.add(
+                        if (masterString[i[0]] in "{[") "${masterString[i[0]]} ${lenJson(i[0],i[1])} ${masterString[i[1]]}"
+                        else masterString.substring(i[0],i[1]+1)
+                    )
                 }
             }
             adapter.notifyDataSetChanged()
+            binding.CDT.text = nowCDT
         }
     }
 
-    private fun lenJson(jsonString_: String): Int {
-
-        val splitList = mutableListOf<String>()
+    private fun lenJson(startIndex_: Int, endIndex: Int): Int {
+        var startIndex = startIndex_
+        var tempString = masterString.substring(startIndex, endIndex+1)
+        val fingerPrint = tempString[0]
+        val splitList = mutableListOf<Array<Int>>()
         val commaList = mutableListOf<Int>()
 
-        var tempJsonString: String
-        var jsonString = jsonString_
-
-        // 移除最外層括號
-        run {
-            for (i in jsonString.indices) {
-                if (jsonString[i] in "{[") {
-                    jsonString = jsonString.substring(i + 1)
-                    break
-                }
-            }
-            for (i in jsonString.length - 1 downTo 0) {
-                if (jsonString[i] in "]}") {
-                    jsonString = jsonString.substring(0, i)
-                    break
-                }
-            }
+        if (fingerPrint in "{[") {
+            tempString = tempString.substring(1,tempString.length-1)
+            startIndex++
         }
 
-        // 準備splitList
+        // splitList
         run {
-            tempJsonString = ""
-            for (i in jsonString) {
+            val tempList = mutableListOf<Int>()
+            for (i in tempString.indices) {
 
-                if (i in "{[") commaList.add(0)
+                if (tempString[i] in "{[")
+                    commaList.add(0)
 
-                else if (i in "]}") {
+                else if (tempString[i] in "]}") {
                     for (j in commaList.size-1 downTo 0) {
                         if (commaList[j] == 0) {
                             commaList[j] = 1
@@ -249,8 +244,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-                else if (i == ',') {
-
+                else if (tempString[i] == ',') {
                     // 這個逗號是否為最外層的(分水嶺)
                     var isWatershed = true
                     for (j in commaList) {
@@ -260,14 +254,16 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     if (isWatershed) {
-                        splitList.add(tempJsonString)
-                        tempJsonString = ""
+                        splitList.add(arrayOf(tempList[0],tempList[tempList.size-1]))
+                        tempList.clear()
                         continue
                     }
                 }
-                tempJsonString += i
+                tempList.add(startIndex + i)
             }
-            splitList.add(tempJsonString)
+            splitList.add(
+                arrayOf(tempList[0],tempList[tempList.size-1])
+            )
         }
 
         return splitList.size
@@ -275,16 +271,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         if (filePath != "") {
-            nowString = try {
+            try {
+                nowIndex = history[history.lastIndex]
                 history.removeLast()
-                history[history.size-1]
             }
-            catch (e: Exception) { masterString }
-
-            nowFingerPrint = nowString[0]
-            plJson(nowString)
+            catch (e: Exception) {
+                nowIndex = arrayOf(0,masterString.lastIndex)
+            }
+            plJson(nowIndex[0],nowIndex[1])
         }
     }
+
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when(keyCode) {
