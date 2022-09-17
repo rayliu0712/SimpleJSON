@@ -83,6 +83,14 @@ class MainActivity : AppCompatActivity() {
                     plJson(0,masterString.length-1)
                     return@setOnLongClickListener true
                 }
+                binding.fabText.setOnClickListener {
+                    if (nowCDT == "Object") {
+//                        val tempString = masterString.substring(0,nowList[nowList.lastIndex][2]) +
+                    }
+                    else {
+
+                    }
+                }
             }
         }
     }
@@ -107,7 +115,7 @@ class MainActivity : AppCompatActivity() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()){}.launch(intent)
         }
 
-        // 準備view & adapterList
+        // view & adapterList
         run {
             adapterList.add("Key Up : New")
             adapterList.add("Long Key Up : New File Under Current Path")
@@ -167,11 +175,6 @@ class MainActivity : AppCompatActivity() {
                 tempList.add(startIndex + i)
             }
             nowList.add(arrayOf(tempList[0],tempList[tempList.lastIndex]))
-
-            Log.i("main",nowList.size.toString())
-            for (i in nowList) {
-                Log.i("main","${i[0]} / ${i[1]}")
-            }
         }
 
         // nowCDT & nowObject & nowArray & adapterList
@@ -179,7 +182,6 @@ class MainActivity : AppCompatActivity() {
             adapterList.clear()
 
             if (fingerPrint == '}'){
-
                 nowCDT = "Object"
                 val tempObject = mutableListOf<Array<Int>>()
                 for (i in nowList) {
