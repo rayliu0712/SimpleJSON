@@ -78,23 +78,13 @@
                     android:contentDescription="@string/contentDescription" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabCurly"
+                    android:id="@+id/fabBrackets"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     app:fabSize="mini"
 
-                    android:src="@drawable/curly_brackets"
-                    android:contentDescription="@string/contentDescription" />
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabSquare"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    app:fabSize="mini"
-
-                    app:srcCompat="@drawable/square_brackets"
+                    app:srcCompat="@drawable/brackets"
                     android:contentDescription="@string/contentDescription" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton

@@ -6,4 +6,12 @@
 
     <string name="folder">Folder</string>
     <string name="empty">Empty</string>
+
+    <string name="title">Title</string>
+    <string name="content">Content</string>
+
+    <string name="object">Object</string>
+    <string name="array">Array</string>
+
+    <string name="string">String</string>
 </resources>

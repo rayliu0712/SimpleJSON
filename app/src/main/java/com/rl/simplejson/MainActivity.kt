@@ -1,14 +1,14 @@
 package com.rl.simplejson
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.LinearLayout
+import android.view.View
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -22,22 +22,22 @@ private const val prefixPath = "/storage/emulated/0"
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var adapter: ArrayAdapter<String>
+    private lateinit var linearLayout: View
 
     private var adapterList = mutableListOf<String>()
-    private lateinit var adapter: ArrayAdapter<String>
     private var filePath = ""
 
     private var masterCDT = ""
     private var masterString = ""
 
-    private var history = mutableListOf<Array<Int>>()
-
+    private var nowList   = mutableListOf<Array<Int>>()
+    private var historyList = mutableListOf<Array<Int>>()
     private var nowIndex = arrayOf<Int>()
     private var nowCDT = ""
-    private var nowObject = mutableListOf<Array<Int>>()
-    private var nowArray  = mutableListOf<Array<Int>>()
-    private var nowList   = mutableListOf<Array<Int>>()
+    private var isEmpty = false
 
+    @SuppressLint("InflateParams")
     private var openResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if(it.resultCode == RESULT_OK) {
             filePath = it.data?.data?.path!!.split(':')[1]
@@ -66,11 +66,11 @@ class MainActivity : AppCompatActivity() {
                     nowIndex = nowList[i]
                     if (masterString[nowIndex[nowIndex.lastIndex]] in "]}") {
                         if (nowCDT=="Object") {
-                            history.add(arrayOf(nowList[0][0]-1, nowList[nowList.lastIndex][2]+1))
+                            historyList.add(arrayOf(nowList[0][0]-1, nowList[nowList.lastIndex][2]+1))
                             plJson(nowIndex[1]+1,nowIndex[2])
                         }
                         else {
-                            history.add(arrayOf(nowList[0][0]-1, nowList[nowList.lastIndex][1]+1))
+                            historyList.add(arrayOf(nowList[0][0]-1, nowList[nowList.lastIndex][1]+1))
                             plJson(nowIndex[0],nowIndex[1])
                         }
                     }
@@ -79,21 +79,94 @@ class MainActivity : AppCompatActivity() {
                     onBackPressed()
                 }
                 binding.fabBack.setOnLongClickListener {
-                    history.clear()
+                    historyList.clear()
                     plJson(0,masterString.length-1)
                     return@setOnLongClickListener true
                 }
+
+                binding.fabBrackets.setOnClickListener {
+                    linearLayout = if(nowCDT=="Object") layoutInflater.inflate(R.layout.alertdialog_new_oa_object,null)
+                    else layoutInflater.inflate(R.layout.alertdialog_new_oa_array,null)
+
+                    val alertDialog = AlertDialog.Builder(this)
+                        .setCancelable(false)
+                        .setTitle("New Json Object/Array")
+                        .setPositiveButton("Done",null)
+                        .setNeutralButton("Cancel",null)
+                        .setView(linearLayout)
+                        .show()
+
+                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        alertDialog.dismiss()
+
+                        val objectButton = linearLayout.findViewById<RadioButton>(R.id.`object`).isChecked
+                        val arrayButton = linearLayout.findViewById<RadioButton>(R.id.array).isChecked
+                        val insertIndex: Int
+                        var insertText = if(isEmpty) "" else ","
+
+                        if (nowCDT == "Object") {
+                            insertIndex = nowList[nowList.lastIndex][2]+1
+                            insertText += "\"${linearLayout.findViewById<EditText>(R.id.title).text}\":"
+                        }
+                        else {
+                            insertIndex = nowList[nowList.lastIndex][1]+1
+                        }
+
+                        if (objectButton || arrayButton) {
+                            insertText += if (objectButton) "{}" else "[]"
+                        }
+                        val tempString = masterString.substring(0,insertIndex) + insertText + masterString.substring(insertIndex)
+
+                        TODO("masterString & nowList & adapterList & history")
+                    }
+                }
                 binding.fabText.setOnClickListener {
+                    var title = EditText(this)
+                    val content: EditText
+
                     if (nowCDT == "Object") {
-//                        val tempString = masterString.substring(0,nowList[nowList.lastIndex][2]) +
+                        linearLayout = layoutInflater.inflate(R.layout.alertdialog_new_text_object,null)
+                        title = linearLayout.findViewById(R.id.title)
+                        content = linearLayout.findViewById(R.id.content)
                     }
                     else {
+                        linearLayout = layoutInflater.inflate(R.layout.alertdialog_new_text_array,null)
+                        content = linearLayout.findViewById(R.id.content)
+                    }
 
+                    val alertDialog = AlertDialog.Builder(this)
+                        .setCancelable(false)
+                        .setView(linearLayout)
+                        .setTitle("New Text")
+                        .setPositiveButton("Done",null)
+                        .setNeutralButton("Cancel",null)
+                        .show()
+
+                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        alertDialog.dismiss()
+
+                        val isString = linearLayout.findViewById<CheckBox>(R.id.isString).isChecked
+                        val insertIndex: Int
+                        var insertText = if(isEmpty) "" else ","
+
+                        if (nowCDT == "Object") {
+                            insertIndex = nowList[nowList.lastIndex][2]+1
+                            insertText += "\"${title.text}\":"
+                            insertText += if(isString) "\"${content.text}\"" else content.text
+                        }
+                        else {
+                            insertIndex = nowList[nowList.lastIndex][1]+1
+                            insertText += if(isString) "\"${content.text}\"" else content.text
+                        }
+                        val tempString = masterString.substring(0,insertIndex) + insertText + masterString.substring(insertIndex)
+
+                        TODO("masterString & nowList & adapterList & history")
                     }
                 }
             }
         }
     }
+
     private var newResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if(it.resultCode == RESULT_OK) {
             filePath = it.data?.data?.path!!.split(':')[1] + '/'
@@ -103,7 +176,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -131,15 +203,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun plJson(startIndex_: Int, endIndex: Int) {
-        var startIndex = startIndex_
-        var tempString = masterString.substring(startIndex, endIndex+1)
-        val fingerPrint = tempString[tempString.lastIndex]
+        val startIndex = startIndex_+1
+        val tempString = masterString.substring(startIndex, endIndex)
+        val fingerPrint = masterString[endIndex]
         val commaList = mutableListOf<Int>()
-
-        if (fingerPrint in "]}") {
-            tempString = tempString.substring(1,tempString.lastIndex)
-            startIndex++
-        }
+        isEmpty = false
 
         // nowList
         run {
@@ -174,44 +242,52 @@ class MainActivity : AppCompatActivity() {
                 }
                 tempList.add(startIndex + i)
             }
-            nowList.add(arrayOf(tempList[0],tempList[tempList.lastIndex]))
+            if (tempList.size>0)
+                nowList.add(arrayOf(tempList[0],tempList[tempList.lastIndex]))
+            else
+                isEmpty = true
         }
 
-        // nowCDT & nowObject & nowArray & adapterList
+        // nowCDT & adapterList
         run {
             adapterList.clear()
 
             if (fingerPrint == '}'){
                 nowCDT = "Object"
                 val tempObject = mutableListOf<Array<Int>>()
-                for (i in nowList) {
-                    for (j in i[0]..i[1]) {
-                        if (masterString[j] == ':') {
-                            tempObject.add(arrayOf(i[0], j, i[1]))
-                            break
+
+                if (!isEmpty) {
+                    for (i in nowList) {
+                        for (j in i[0]..i[1]) {
+                            if (masterString[j] == ':') {
+                                tempObject.add(arrayOf(i[0], j, i[1]))
+                                break
+                            }
                         }
                     }
-                }
-                nowObject = tempObject
-                nowList = nowObject
+                    nowList = tempObject
 
-                for (i in nowObject) {
-                    adapterList.add("${masterString.substring(i[0],i[1])} : ${
-                        if (masterString[i[1]+1] in "{[") "${masterString[i[1]+1]} ${lenJson(i[1]+1,i[2])} ${masterString[i[2]]}"
-                        else masterString.substring(i[1]+1,i[2]+1)
-                    }")
+                    for (i in nowList) {
+                        adapterList.add("${masterString.substring(i[0],i[1])} : ${
+                            if (masterString[i[1]+1] in "{[") "${masterString[i[1]+1]} ${lenJson(i[1]+1,i[2])} ${masterString[i[2]]}"
+                            else masterString.substring(i[1]+1,i[2]+1)
+                        }")
+                    }
                 }
+                else nowList.add(arrayOf(startIndex-1,startIndex-1,startIndex-1))
             }
             else {
                 nowCDT = "Array"
-                nowArray = nowList
 
-                for (i in nowArray) {
-                    adapterList.add(
-                        if (masterString[i[0]] in "{[") "${masterString[i[0]]} ${lenJson(i[0],i[1])} ${masterString[i[1]]}"
-                        else masterString.substring(i[0],i[1]+1)
-                    )
+                if (!isEmpty) {
+                    for (i in nowList) {
+                        adapterList.add(
+                            if (masterString[i[0]] in "{[") "${masterString[i[0]]} ${lenJson(i[0],i[1])} ${masterString[i[1]]}"
+                            else masterString.substring(i[0],i[1]+1)
+                        )
+                    }
                 }
+                else nowList.add(arrayOf(startIndex-1,startIndex-1))
             }
             adapter.notifyDataSetChanged()
             binding.CDT.text = nowCDT
@@ -234,12 +310,10 @@ class MainActivity : AppCompatActivity() {
         run {
             val tempList = mutableListOf<Int>()
             for (i in tempString.indices) {
-
                 if (tempString[i] in "{[")
                     commaList.add(0)
-
                 else if (tempString[i] in "]}") {
-                    for (j in commaList.size-1 downTo 0) {
+                    for (j in commaList.lastIndex downTo 0) {
                         if (commaList[j] == 0) {
                             commaList[j] = 1
                             break
@@ -263,19 +337,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 tempList.add(startIndex + i)
             }
-            splitList.add(
-                arrayOf(tempList[0],tempList[tempList.size-1])
-            )
+            splitList.add(arrayOf(tempList[0],tempList[tempList.size-1]))
         }
-
         return splitList.size
     }
 
     override fun onBackPressed() {
         if (filePath != "") {
             try {
-                nowIndex = history[history.lastIndex]
-                history.removeLast()
+                nowIndex = historyList[historyList.lastIndex]
+                historyList.removeLast()
             }
             catch (e: Exception) {
                 nowIndex = arrayOf(0,masterString.lastIndex)
@@ -389,6 +460,29 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
+        }
+    }
+
+    private fun <T> ezLog(vararg msg: T, method: Int = Log.DEBUG, tag: String? = "main") {
+        for (i in msg) {
+            when (method) {
+                Log.VERBOSE -> Log.v(tag, i.toString())
+                Log.DEBUG   -> Log.d(tag, i.toString())
+                Log.INFO    -> Log.i(tag, i.toString())
+                Log.WARN    -> Log.w(tag, i.toString())
+                Log.ERROR   -> Log.e(tag, i.toString())
+                Log.ASSERT  -> Log.wtf(tag, i.toString())
+            }
+        }
+    }
+    private fun ezLog(msg: Char = '\n', method: Int = Log.DEBUG, tag: String? = "main") {
+        when (method) {
+            Log.VERBOSE -> Log.v(tag, msg.toString())
+            Log.DEBUG   -> Log.d(tag, msg.toString())
+            Log.INFO    -> Log.i(tag, msg.toString())
+            Log.WARN    -> Log.w(tag, msg.toString())
+            Log.ERROR   -> Log.e(tag, msg.toString())
+            Log.ASSERT  -> Log.wtf(tag, msg.toString())
         }
     }
 }
