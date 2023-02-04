@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.*
+import android.provider.ContactsContract.CommonDataKinds.Im
 import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
@@ -20,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.rl.custom.itLog
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -170,6 +172,10 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/RLGreenTea/SimpleJSON")))
             }
         }
+        actionBar.findViewById<ImageView>(R.id.leave).setOnClickListener {
+            finish()
+            Toast.makeText(this, "LEAVE", Toast.LENGTH_LONG).show()
+        }
 
         filePathView = findViewById(R.id.path)
         nowTypeView = findViewById(R.id.type)
@@ -278,6 +284,8 @@ class MainActivity : AppCompatActivity() {
             else {
                 isMoveMode = true
                 moveButton.backgroundTintList = ColorStateList.valueOf(getMyColor(R.color.purple))
+                Toast.makeText(this, "Click on the item you'd like to move",Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Press volume up and down to move item", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -979,7 +987,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     else {
-                        Toast.makeText(this, "Name cannot be null", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Name cannot be null", Toast.LENGTH_LONG).show()
                     }
                 }
             }
