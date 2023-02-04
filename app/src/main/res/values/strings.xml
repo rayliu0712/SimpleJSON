@@ -1,17 +1,32 @@
 <resources>
     <string name="app_name">Simple JSON</string>
-    <string name="contentDescription">I am contentDescription</string>
-
     <string name="path">No File Chosen</string>
-
     <string name="folder">Folder</string>
     <string name="empty">Empty</string>
-
-    <string name="title">Title</string>
-    <string name="content">Content</string>
-
+    <string name="name">Name</string>
+    <string name="value">Value</string>
     <string name="object">Object</string>
     <string name="array">Array</string>
-
+    <string name="nu">null</string>
     <string name="string">String</string>
+    <string name="uneditable">Cannot Edit Here</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="choose_other_file">Choose Other File</string>
+    <string name="add">Add</string>
+    <string name="or">or</string>
+    <string name="open_file">Open File</string>
+    <string name="new_file">New File</string>
+    <string name="about">About</string>
+    <string name="file_error">檔案格式錯誤</string>
+    <string name="error">ERROR</string>
+    <string name="generate">Generate</string>
+    <string name="cancel_and_choose">Cancel And\nChoose Other File</string>
+    <string name="error_result">此檔案為空檔案\n需要生成JSON Array或JSON Object</string>
+    <string name="ok">OK</string>
+    <string name="menu">MENU</string>
+    <string name="new_file_name">File Name</string>
+    <string name="json">.json</string>
 </resources>

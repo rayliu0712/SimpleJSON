@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <androidx.coordinatorlayout.widget.CoordinatorLayout
-    android:id="@+id/coordinatorLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity" >
+    tools:context=".MainActivity"
+    android:background="@color/dark_gray">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,25 +20,28 @@
 
             <TextView
                 android:id="@+id/path"
-                android:fontFamily="@font/consolas"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="3"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
                 android:layout_marginStart="15dp"
                 android:text="@string/path"
-                android:textSize="20sp"
-                tools:ignore="RtlSymmetry" />
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/consolas" />
 
             <TextView
-                android:id="@+id/CDT"
+                android:id="@+id/type"
                 android:fontFamily="@font/consolas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:layout_marginBottom="7dp"
                 android:layout_marginEnd="15dp"
                 android:text="@string/empty"
-                android:textSize="20sp"
-                android:textColor="#ff0000"
-                tools:ignore="RtlSymmetry" />
+                android:textSize="18sp"
+                android:textColor="#ff0000" />
 
         </LinearLayout>
 
@@ -49,10 +52,12 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="match_parent" >
 
             <ListView
-                android:id="@+id/listView"
+                android:divider="@color/dialog_background"
+                android:dividerHeight="1dp"
+                android:id="@+id/listview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:longClickable="true" />
@@ -62,40 +67,39 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:layout_margin="10dp"
-
                 android:orientation="vertical"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
                 tools:ignore="RelativeOverlap">
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabBack"
+                    app:borderWidth="0dp"
+                    app:backgroundTint="@color/blue"
+                    android:id="@+id/back_fab"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
-
-                    app:srcCompat="@drawable/back"
-                    android:contentDescription="@string/contentDescription" />
+                    app:srcCompat="@drawable/back"/>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabBrackets"
+                    app:borderWidth="0dp"
+                    app:backgroundTint="@color/blue"
+                    android:id="@+id/add_fab"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     app:fabSize="mini"
-
-                    app:srcCompat="@drawable/brackets"
-                    android:contentDescription="@string/contentDescription" />
+                    app:srcCompat="@drawable/add"/>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabText"
+                    app:borderWidth="0dp"
+                    android:id="@+id/move_fab"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    app:backgroundTint="@color/blue"
                     android:layout_margin="5dp"
-                    app:fabSize="mini"
-
-                    app:srcCompat="@drawable/text"
-                    android:contentDescription="@string/contentDescription" />
+                    android:src="@drawable/move"
+                    app:fabSize="mini"/>
 
             </LinearLayout>
 

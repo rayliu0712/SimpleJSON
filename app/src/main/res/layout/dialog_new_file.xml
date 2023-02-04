@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="?android:attr/dialogPreferredPadding"
+    android:background="@color/dialog_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="?android:attr/dialogPreferredPadding"
+        android:paddingEnd="?android:attr/dialogPreferredPadding">
+
+        <TextView
+            android:textColor="@color/white"
+            android:layout_marginBottom="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/new_file_name"
+            android:fontFamily="@font/consolas"
+            android:textSize="30sp"
+            android:gravity="center"/>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_marginBottom="60dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <EditText
+                android:layout_marginEnd="5dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/dialog_text"
+                android:backgroundTint="@color/blue"
+                android:id="@+id/file_name"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/consolas"
+                android:importantForAutofill="no"
+                android:inputType="none"
+                android:hint="@string/new_file_name" />
+
+            <CheckBox
+                android:clickable="false"
+                android:focusable="false"
+                android:textColor="@color/unable"
+                android:buttonTint="@color/unable"
+                android:id="@+id/isString"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/consolas"
+                android:text="@string/json"
+                android:checked="true" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/dialog_text" />
+
+    <TextView
+        android:id="@+id/done"
+        android:background="@drawable/dialog_done_ripple"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="@string/done"
+        android:gravity="center"
+        android:fontFamily="@font/consolas"
+        android:textSize="20sp"
+        android:textColor="@color/white" />
+
+</LinearLayout>

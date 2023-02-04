@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/dialog_background"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="?android:attr/dialogPreferredPadding">
+
+    <TextView
+        android:textColor="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/edit"
+        android:fontFamily="@font/consolas"
+        android:gravity="center"
+        android:textSize="30sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="40dp"
+        android:paddingStart="?android:attr/dialogPreferredPadding"
+        android:paddingEnd="?android:attr/dialogPreferredPadding">
+
+        <EditText
+            android:textColor="@color/white"
+            android:textColorHint="@color/dialog_text"
+            android:backgroundTint="@color/blue"
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/consolas"
+            android:importantForAutofill="no"
+            android:inputType="none"
+            android:hint="@string/name" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/string"
+            android:fontFamily="@font/consolas"
+            android:checked="true"
+            android:clickable="false"
+            android:focusable="false"
+            android:buttonTint="@color/unable"
+            android:textColor="@color/unable" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:paddingStart="?android:attr/dialogPreferredPadding"
+        android:paddingEnd="?android:attr/dialogPreferredPadding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp">
+
+        <EditText
+            android:textColor="@color/white"
+            android:textColorHint="@color/dialog_text"
+            android:backgroundTint="@color/blue"
+            android:id="@+id/value"
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/consolas"
+            android:importantForAutofill="no"
+            android:inputType="none"
+            android:hint="@string/value" />
+
+        <CheckBox
+            android:buttonTint="@color/blue"
+            android:textColor="@color/white"
+            android:id="@+id/isString"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/string"
+            android:fontFamily="@font/consolas"
+            android:checked="true"/>
+
+    </LinearLayout>
+
+
+    <View
+        android:layout_marginTop="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/dialog_text" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:clickable="true"
+            android:focusable="true"
+            android:id="@+id/delete"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="@string/delete"
+            android:fontFamily="@font/consolas"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:background="@drawable/dialog_delete_ripple"
+            android:textColor="@color/white" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/dialog_text"/>
+
+        <TextView
+            android:id="@+id/cancel"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="@string/cancel"
+            android:fontFamily="@font/consolas"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:textColor="@color/white"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/dialog_text"/>
+
+        <TextView
+            android:id="@+id/done"
+            android:background="@drawable/dialog_done_ripple"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="@string/done"
+            android:fontFamily="@font/consolas"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:textColor="@color/white"/>
+
+    </LinearLayout>
+
+</LinearLayout>
